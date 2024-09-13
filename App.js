@@ -28,6 +28,7 @@ export default function App() {
         <NavigationContainer>
           <NavigationStack />
         </NavigationContainer>
+        <Text></Text>
       }
     </Provider>
 
