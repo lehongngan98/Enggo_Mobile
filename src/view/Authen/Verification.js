@@ -4,9 +4,14 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import authentication from "../../apis/authApi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import { addAuth } from "../../redux/reducers/authReducer";
 
 const CountdownTimer = ({ initialSeconds }) => {
   const [seconds, setSeconds] = useState(initialSeconds);
@@ -38,6 +43,8 @@ const CountdownTimer = ({ initialSeconds }) => {
     // onResend && onResend(); // Gọi hàm onResend nếu có
   };
 
+
+
   return (
     <View style={styles.container}>
       {isCounting ? (
@@ -59,14 +66,82 @@ const formatTime = (seconds) => {
     .padStart(2, "0")}`;
 };
 
-const Verification = ({ navigation }) => {
+
+
+
+
+
+const Verification = ({ navigation, route }) => {
+  const { code, email, password, username } = route.params;
   const [values, setValues] = useState(["", "", "", ""]);
+  const [limit, setLimit] = useState(60);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (limit > 0) {
+      const interval = setInterval(() => {
+        setLimit(limit - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+
+    return;
+  }, [limit]);
+
 
   const handleChange = (text, index) => {
     const newValues = [...values];
     newValues[index] = text;
     setValues(newValues);
   };
+
+
+  const handleVerification = async () => {
+    // Gửi mã xác thực lên server
+
+
+    // chuyen doi gia tri values thanh so
+    const verificationCode = values.join("").trim();
+
+    if (verificationCode.length < 4) {
+      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ 4 số");
+      return;
+    }
+
+    if (limit <= 0) {
+      Alert.alert("Lỗi", "Đã hết thời gian xác thực, bấm Gửi lại")
+      return;
+    }
+
+    if (verificationCode !== String(code).trim()) {
+      console.log(verificationCode);
+      console.log(code);
+
+      Alert.alert("Lỗi", "Mã xác thực không chính xác");
+      return;
+    }
+
+    // call api
+    const api = '/register';
+    const data = { fullname: username, email, password };
+    // setIsVisable(true);
+    Alert.alert("Thành công!","Bạn đăng ký tài khoản thành công.")
+    try {
+      const res = await authentication.HandleAuthentication(api, data, 'post');
+      console.log(res);
+
+      // dispatch action
+      dispatch(addAuth(res.data));
+      await AsyncStorage.setItem('auth', JSON.stringify(res.data));
+
+    } catch (error) {
+      console.log(`Email already exists! ${error}`);
+      Alert.alert('Lỗi', 'Email đã tồn tại!');
+    }
+
+  }
+
 
   return (
     <View style={styles.appContainer}>
@@ -97,7 +172,7 @@ const Verification = ({ navigation }) => {
           <View style={{ width: 300, height: 60 }}>
             <Text style={{ fontSize: 17, marginTop: 10 }}>
               Chúng tôi sẽ gửi mã xác thực đến {""}
-              <Text style={{ fontSize: 17 }}>vanchanh0730@gmail.com</Text>
+              <Text style={{ fontSize: 17 }}>{email}</Text>
             </Text>
           </View>
 
@@ -152,7 +227,7 @@ const Verification = ({ navigation }) => {
                 alignItems: "center",
                 marginTop: 12,
               }}
-              onPress={() => navigation.navigate("ResetPassword")}
+              onPress={handleVerification}
             >
               <Text style={{ color: "white", fontSize: 20 }}>Tiếp tục</Text>
             </TouchableOpacity>

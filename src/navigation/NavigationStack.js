@@ -161,15 +161,17 @@ const MainNavigator = () => {
   return (
 
     <Stack.Navigator>
-      <Stack.Screen
-        name="SongNguNavigation"
-        component={SongNguNavigation}
-        options={{ headerShown: false }}
-      />
+
 
       <Stack.Screen
         name="TabNavigationContainer"
         component={TabNavigationContainer}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="SongNguNavigation"
+        component={SongNguNavigation}
         options={{ headerShown: false }}
       />
 
