@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { addAuth, authSelector } from "../redux/reducers/authReducer";
 import { RequestResetPassword, ResetPassword, SignIn, SignUp, Verification } from "../view/Authen";
@@ -10,6 +10,7 @@ import { SongNgu_S1, SongNgu_S2, SongNgu_S3 } from "../view/songNgu";
 import { Account, Home, ListVocabulary } from "../view/TabScreen";
 import { TinTuc_S1, TinTuc_S2 } from "../view/tinTuc";
 import { TruyenChem_S1, TruyenChem_S2 } from "../view/truyenChem";
+import SplashScreen from "../../splashScreen/SplashScreen";
 
 
 const Tab = createBottomTabNavigator();
@@ -198,13 +199,22 @@ const NavigationStack = () => {
 
   const { getItem } = useAsyncStorage('auth');
 
+  const [isShowSplash, setisShowSplash] = useState(true);
+
   const auth = useSelector(authSelector);
 
   const dispatch = useDispatch();
 
+
+
   useEffect(() => {
     checkLogin();
 
+    const timeout = setTimeout(() => {
+      setisShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [])
 
   const checkLogin = async () => {
@@ -224,7 +234,7 @@ const NavigationStack = () => {
   return (
     <>
       {
-        auth.accesstoken ? <MainNavigator /> : <AuthenNavigation />
+        isShowSplash ? <SplashScreen/> : (auth.accesstoken ? <MainNavigator /> : <AuthenNavigation />)
       }
     </>
   );

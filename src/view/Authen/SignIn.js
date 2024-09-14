@@ -24,6 +24,7 @@ const SignIn = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setPasswordVisible] = useState(false); //password co the nhin thay duoc mac dinh la false
+  const [loading, setLoading] = useState(false);
 
 
   const dispatch = useDispatch();
@@ -38,27 +39,31 @@ const SignIn = ({ navigation }) => {
     const passwordValidate = Validate.Password(password);
 
     if (!emailValidate) {
-      Alert.alert("Lỗi","Email không hợp lệ");
+      Alert.alert("Lỗi", "Email không hợp lệ");
       return;
     }
     if (!passwordValidate) {
-      Alert.alert("Lỗi","Mật khẩu không hợp lệ");
+      Alert.alert("Lỗi", "Mật khẩu không hợp lệ");
       return;
     }
 
     // Call API login
-    
+
     try {
-      const res = await authentication.HandleAuthentication("/login",{email,password},"post")
+      setLoading(true);
+      const res = await authentication.HandleAuthentication("/login", { email, password }, "post")
 
       dispatch(addAuth(res.data));
 
       await AsyncStorage.setItem(
         'auth',
         // isRemember ? JSON.stringify(res.data) : email,
-        JSON.stringify(res.data) 
-    );
+        JSON.stringify(res.data)
+
+      );
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.log(error);
       alert(error)
     }

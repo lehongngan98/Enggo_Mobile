@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import authentication from "../../apis/authApi";
 import { Validate } from "../../ultis/Validate";
+import LoadingModal from "../../modal/LoadingModal";
 
 
 
@@ -27,7 +28,7 @@ const initValues = {
 
 const SignUp = ({ navigation }) => {
   const [values, setValues] = useState(initValues);
-
+  const [isLoading,setIsLoading] = useState(false);
 
   const [isPasswordVisible, setPasswordVisible] = useState(false); //password co the nhin thay duoc mac dinh la false
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -62,10 +63,19 @@ const SignUp = ({ navigation }) => {
       return;
     }
     const emailValidate = Validate.email(email);
-    
+    const passwordValidate = Validate.Password(password);
+    const confirmPasswordValidate = Validate.Password(confirmPassword);
     
     if (!emailValidate) {
       Alert.alert("Lỗi", "Email không hợp lệ");
+      return;
+    }
+    if (!passwordValidate) {
+      Alert.alert("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự");
+      return;
+    }
+    if (!confirmPasswordValidate) {
+      Alert.alert("Lỗi", "Mật khẩu xác thực phải có ít nhất 6 ký tự");
       return;
     }
     if (!password) {
@@ -83,19 +93,19 @@ const SignUp = ({ navigation }) => {
 
     // phan xu ly
     const api = '/verification';
-    // setLoading(true);
+    setIsLoading(true);
     try {
       const res = await authentication.HandleAuthentication(api, { email }, 'post');
 
       console.log(res);
-      // setLoading(false);
+      setIsLoading(false);
       if (res.status === 200) {
         navigation.navigate('Verification', { code: res.data.code, ...values });
       }
 
     } catch (error) {
       console.log(error);
-      // setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -441,6 +451,7 @@ const SignUp = ({ navigation }) => {
           </Text>
         </View>
       </View>
+      <LoadingModal visible={isLoading}/>
     </View>
   );
 };
