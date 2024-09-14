@@ -7,7 +7,7 @@ import {
   Image,
   Switch,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Appbar, PaperProvider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -21,6 +21,7 @@ const Account = ({navigation}) => {
   const [isEnabledClock, setIsEnabledClock] = useState(false);
   const [time, setTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [user, setUser] = useState('');
 
   const dispatch = useDispatch()
 
@@ -41,6 +42,27 @@ const Account = ({navigation}) => {
 
   const showTimePicker = () => {
     setShowPicker(true);
+  };
+
+
+  useEffect(() => {
+    
+
+    getEmailFromStorage();
+  }, []);
+
+
+  const getEmailFromStorage = async () => {
+    try {
+      const user = await AsyncStorage.getItem('auth');      
+      const parsedUser = JSON.parse(user); //parse string to object
+
+      if (parsedUser) {
+        setUser(parsedUser);        
+      }
+    } catch (error) {
+      console.error('Failed to retrieve email from AsyncStorage:', error);
+    }
   };
 
   //logout
@@ -110,8 +132,8 @@ const Account = ({navigation}) => {
                   justifyContent: "center",
                 }}
               >
-                <Text style={styles.name}>Nguyễn Văn Chánh</Text>
-                <Text style={styles.email}>vanchanh0730@gmail.com</Text>
+                <Text style={styles.name}>{user.fullname}</Text>
+                <Text style={styles.email}>{user.email}</Text>
               </View>
               <View
                 style={{
