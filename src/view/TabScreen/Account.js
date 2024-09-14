@@ -11,11 +11,18 @@ import React, { useState } from "react";
 import { Appbar, PaperProvider } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import { removeAuth } from "../../redux/reducers/authReducer";
 
-const Account = () => {
+const Account = ({navigation}) => {
   //Switch nightMode and Clock
   const [isEnabledNightMode, setIsEnabledNightMode] = useState(false);
   const [isEnabledClock, setIsEnabledClock] = useState(false);
+  const [time, setTime] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+
+  const dispatch = useDispatch()
 
   const toggleSwitchNightMode = () =>
     setIsEnabledNightMode((previousState) => !previousState);
@@ -23,8 +30,7 @@ const Account = () => {
     setIsEnabledClock((previousState) => !previousState);
 
   // date time picker
-  const [time, setTime] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
+
 
   const onTimeChange = (event, selectedTime) => {
     setShowPicker(false);
@@ -36,6 +42,16 @@ const Account = () => {
   const showTimePicker = () => {
     setShowPicker(true);
   };
+
+  //logout
+  const handleLogout = async () =>{
+    try {
+      await AsyncStorage.removeItem('auth');
+      dispatch(removeAuth());
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <PaperProvider style={{ flex: 1 }}>
@@ -515,7 +531,8 @@ const Account = () => {
             marginTop: 10,
           }}
         >
-          <TouchableOpacity style={styles.boxLogout}>
+          <TouchableOpacity style={styles.boxLogout}
+          onPress={handleLogout}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>Đăng xuất</Text>
           </TouchableOpacity>
         </View>

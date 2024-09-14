@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { authSelector } from "../redux/reducers/authReducer";
+import { addAuth, authSelector } from "../redux/reducers/authReducer";
 import { RequestResetPassword, ResetPassword, SignIn, SignUp, Verification } from "../view/Authen";
 import { SongNgu_S1, SongNgu_S2, SongNgu_S3 } from "../view/songNgu";
 import { Account, Home, ListVocabulary } from "../view/TabScreen";

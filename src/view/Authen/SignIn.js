@@ -6,40 +6,64 @@ import {
   TouchableOpacity,
   Switch,
   TextInput,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { Validate } from "../../ultis/Validate";
+import authentication from "../../apis/authApi";
+import { useDispatch } from "react-redux";
+import { addAuth } from "../../redux/reducers/authReducer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SignIn = ({ navigation }) => {
   // Switch
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
-  // show/hide password
-  //   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState("");
   const [isPasswordVisible, setPasswordVisible] = useState(false); //password co the nhin thay duoc mac dinh la false
+
+
+  const dispatch = useDispatch();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!isPasswordVisible);
   };
 
-  // handle login
-  //   const [email, setEmail] = useState("");
 
-  //   const handleLogin = () => {
-  //     axios
-  //       .get(`https://6627001fb625bf088c071863.mockapi.io/emailLogin`)
-  //       .then((response) => {
-  //         const data = response.data;
-  //         const user = data.find((user) => user.email === email);
-  //         if (user) {
-  //           console.log("Login successful");
-  //           navigation.navigate("TabNavigation");
-  //         } else {
-  //           console.log("Login failed");
-  //         }
-  //       });
-  //   };
+  const handleLogin = async () => {
+    const emailValidate = Validate.email(email);
+    const passwordValidate = Validate.Password(password);
+
+    if (!emailValidate) {
+      Alert.alert("Lỗi","Email không hợp lệ");
+      return;
+    }
+    if (!passwordValidate) {
+      Alert.alert("Lỗi","Mật khẩu không hợp lệ");
+      return;
+    }
+
+    // Call API login
+    
+    try {
+      const res = await authentication.HandleAuthentication("/login",{email,password},"post")
+
+      dispatch(addAuth(res.data));
+
+      await AsyncStorage.setItem(
+        'auth',
+        // isRemember ? JSON.stringify(res.data) : email,
+        JSON.stringify(res.data) 
+    );
+    } catch (error) {
+      console.log(error);
+      alert(error)
+    }
+
+  }
 
   return (
     <View style={styles.container}>
@@ -98,6 +122,8 @@ const SignIn = ({ navigation }) => {
             <View style={{ flex: 8.5, justifyContent: "center" }}>
               {/* Input Email */}
               <TextInput
+                value={email}
+                onChangeText={setEmail}
                 placeholder="Nhập email"
                 style={{
                   color: "gray",
@@ -132,9 +158,9 @@ const SignIn = ({ navigation }) => {
             <View style={{ flex: 7, justifyContent: "center" }}>
               {/* Input Password */}
               <TextInput
-                // value={password}
-                // onChangeText={setPassword}
-                // secureTextEntry={!isPasswordVisible}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!isPasswordVisible}
                 placeholder="Nhập mật khẩu"
                 style={{
                   color: "gray",
@@ -236,7 +262,7 @@ const SignIn = ({ navigation }) => {
               alignItems: "center",
               marginTop: 12,
             }}
-            onPress={() => navigation.navigate("TabNavigationContainer")}
+            onPress={handleLogin}
           >
             <Text style={{ color: "white", fontSize: 18 }}>Đăng nhập</Text>
           </TouchableOpacity>
