@@ -3,7 +3,7 @@
     "name": "abc",
     "slug": "abc",
     "version": "1.0.0",
-    "scheme":"enggo",
+    "scheme":["enggo"],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -31,3 +31,5 @@
     }
   }
 }
+
+

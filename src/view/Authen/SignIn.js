@@ -18,10 +18,9 @@ import { addAuth } from "../../redux/reducers/authReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import * as Facebook from 'expo-auth-session/providers/facebook';
 
-const webClientId = "951681961773-2p3d9vc8lunvv5sj82r6brl0qm3ft0oi.apps.googleusercontent.com";
-const iosClientId = "951681961773-sd50gsefhsusrqj9foho4f7q91vlvkjp.apps.googleusercontent.com";
-const androidClientId = "951681961773-2dg3su9is80rlp84uqmpesvpa4ks34js.apps.googleusercontent.com";
+
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -47,20 +46,33 @@ const SignIn = ({ navigation }) => {
   };
 
 
-  const config = {
-    webClientId,
-    iosClientId,
-    androidClientId,
-  }
 
-  const [request, response, promptAsync] = Google.useAuthRequest(config);
   const api = '/google-signin';
 
-  useEffect(() => {
-    handleToken();
-  }, [response])
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: "951681961773-2p3d9vc8lunvv5sj82r6brl0qm3ft0oi.apps.googleusercontent.com",
+    iosClientId: "951681961773-sd50gsefhsusrqj9foho4f7q91vlvkjp.apps.googleusercontent.com",
+    androidClientId: "951681961773-2dg3su9is80rlp84uqmpesvpa4ks34js.apps.googleusercontent.com",
 
-  const handleToken = () => {
+  });
+
+  const [requestFacebook, responseFacebook, promptAsyncFacebook] = Facebook.useAuthRequest({
+    clientId: '447429168323371',
+  })
+
+
+
+  useEffect(() => {
+    handleLoginWithGoogle();
+  }, [response]);
+
+  useEffect(() => {
+    handleLoginWithFacebook();
+  }, [responseFacebook]);
+
+
+
+  const handleLoginWithGoogle = () => {
     if (response?.type === 'success') {
       const { authentication } = response;
       const token = authentication?.accessToken;
@@ -70,6 +82,46 @@ const SignIn = ({ navigation }) => {
 
     }
   }
+
+
+
+  const handleLoginWithFacebook = async () => {
+    setLoading(true);
+
+    if (responseFacebook?.type === 'success' && responseFacebook.authentication) {
+      const token = responseFacebook.authentication.accessToken;
+      console.log("Facebook token:", token);
+
+      try {
+        const userInfoResponse = await fetch(
+          `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${token}`
+        );
+        const userInfo = await userInfoResponse.json();
+        const user = {
+          email: userInfo.email || '', // Fallback if no email is provided
+          fullname: userInfo.name,
+          photo: userInfo.picture.data.url,
+        };
+
+        console.log("Facebook user info:", user);
+        const res = await authentication.HandleAuthentication(api, user, "post");
+
+        dispatch(addAuth(res.data));
+
+        await AsyncStorage.setItem(
+          'auth',
+          JSON.stringify(res.data),
+        );
+
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.log("Error during Facebook login:", error);
+      }
+    }
+    
+  };
+
 
   const getUserProfileSignInGoogle = async (token) => {
     if (!token) {
@@ -86,11 +138,14 @@ const SignIn = ({ navigation }) => {
       const userInfo = await response.json();
       const user = {
         email: userInfo.email,
-        name: userInfo.name,
+        fullname: userInfo.name,
         photo: userInfo.picture,
       }
 
+      console.log("user info : ", user);
       const res = await authentication.HandleAuthentication(api, user, "post");
+      console.log("res data : ", res.data);
+
       dispatch(addAuth(res.data));
 
       await AsyncStorage.setItem(
@@ -98,6 +153,7 @@ const SignIn = ({ navigation }) => {
         JSON.stringify(res.data),
       );
 
+      // navigation.navigate('Home');
       console.log(res);
       setLoading(false);
 
@@ -105,9 +161,46 @@ const SignIn = ({ navigation }) => {
       setLoading(false);
       console.log(error);
     }
+  };
 
 
-  }
+
+  // const getUserProfileSignInFacebook = async (token) => {
+  //   if (!token) {
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${token}`);
+
+  //     const userInfo = await response.json();
+  //     const user = {
+  //       email: userInfo.email ?? '',
+  //       fullname: userInfo.name,
+  //       photo: userInfo.picture.data.url,
+  //     };
+
+  //     console.log("Facebook user info:", user);
+  //     const res = await authentication.HandleAuthentication(api, user, "post");
+  //     console.log("Facebook res data:", res.data);
+
+  //     dispatch(addAuth(res.data));
+
+  //     await AsyncStorage.setItem(
+  //       'auth',
+  //       JSON.stringify(res.data),
+  //     );
+
+  //     console.log(res);
+  //     setLoading(false);
+
+  //   } catch (error) {
+  //     setLoading(false);
+  //     console.log(error);
+  //   }
+  // };
+
+
 
 
   const handleLogin = async () => {
@@ -139,9 +232,14 @@ const SignIn = ({ navigation }) => {
       );
       setLoading(false);
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        Alert.alert("Lỗi", "Email hoặc mật khẩu không đúng");
+      } else {
+        Alert.alert("Lỗi", "Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      }
+      console.error("Error during login:", error.message);
+    } finally {
       setLoading(false);
-      console.log(error);
-      alert(error)
     }
 
   }
@@ -398,6 +496,7 @@ const SignIn = ({ navigation }) => {
               borderWidth: 1,
               borderColor: "gray",
             }}
+            onPress={() => promptAsyncFacebook()}
           >
             <View
               style={{
@@ -426,7 +525,10 @@ const SignIn = ({ navigation }) => {
       </View>
     </View>
   );
+
+
 };
+
 
 export default SignIn;
 

@@ -122,10 +122,14 @@ const Account = ({navigation}) => {
                   alignItems: "center",
                 }}
               >
-                <Ionicons
+                {/* <Ionicons
                   name="person-circle-outline"
                   size={45}
                   color="black"
+                /> */}
+                <Image
+                  source={{uri: user.photo}}
+                  style={{ width: 35, height: 35, resizeMode: "contain" ,borderRadius:100}}
                 />
               </View>
               <View
@@ -576,6 +580,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "white",
     flexDirection: "row",
+    marginTop:10,
   },
   boxLogout: {
     width: "70%",
