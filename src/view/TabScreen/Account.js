@@ -69,7 +69,9 @@ const Account = ({navigation}) => {
   const handleLogout = async () =>{
     try {
       await AsyncStorage.removeItem('auth');
+      
       dispatch(removeAuth());
+
     } catch (error) {
       console.log(error);
     }

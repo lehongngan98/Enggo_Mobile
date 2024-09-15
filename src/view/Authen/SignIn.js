@@ -1,3 +1,4 @@
+
 import {
   StyleSheet,
   Text,
@@ -8,13 +9,24 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Validate } from "../../ultis/Validate";
 import authentication from "../../apis/authApi";
 import { useDispatch } from "react-redux";
 import { addAuth } from "../../redux/reducers/authReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+
+const webClientId = "951681961773-2p3d9vc8lunvv5sj82r6brl0qm3ft0oi.apps.googleusercontent.com";
+const iosClientId = "951681961773-sd50gsefhsusrqj9foho4f7q91vlvkjp.apps.googleusercontent.com";
+const androidClientId = "951681961773-2dg3su9is80rlp84uqmpesvpa4ks34js.apps.googleusercontent.com";
+
+WebBrowser.maybeCompleteAuthSession();
+
+
+
 
 const SignIn = ({ navigation }) => {
   // Switch
@@ -27,11 +39,75 @@ const SignIn = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
 
 
+
   const dispatch = useDispatch();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!isPasswordVisible);
   };
+
+
+  const config = {
+    webClientId,
+    iosClientId,
+    androidClientId,
+  }
+
+  const [request, response, promptAsync] = Google.useAuthRequest(config);
+  const api = '/google-signin';
+
+  useEffect(() => {
+    handleToken();
+  }, [response])
+
+  const handleToken = () => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      const token = authentication?.accessToken;
+      console.log("token :", token);
+
+      getUserProfileSignInGoogle(token);
+
+    }
+  }
+
+  const getUserProfileSignInGoogle = async (token) => {
+    if (!token) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch(`https://www.googleapis.com/userinfo/v2/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      const userInfo = await response.json();
+      const user = {
+        email: userInfo.email,
+        name: userInfo.name,
+        photo: userInfo.picture,
+      }
+
+      const res = await authentication.HandleAuthentication(api, user, "post");
+      dispatch(addAuth(res.data));
+
+      await AsyncStorage.setItem(
+        'auth',
+        JSON.stringify(res.data),
+      );
+
+      console.log(res);
+      setLoading(false);
+
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+
+
+  }
 
 
   const handleLogin = async () => {
@@ -293,6 +369,7 @@ const SignIn = ({ navigation }) => {
               borderWidth: 1,
               borderColor: "gray",
             }}
+            onPress={() => promptAsync()}
           >
             <View
               style={{
