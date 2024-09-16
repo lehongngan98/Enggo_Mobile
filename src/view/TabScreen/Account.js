@@ -19,7 +19,7 @@ const Account = ({navigation}) => {
   //Switch nightMode and Clock
   const [isEnabledNightMode, setIsEnabledNightMode] = useState(false);
   const [isEnabledClock, setIsEnabledClock] = useState(false);
-  const [time, setTime] = useState(new Date());
+  // const [time, setTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [user, setUser] = useState('');
 
@@ -33,16 +33,16 @@ const Account = ({navigation}) => {
   // date time picker
 
 
-  const onTimeChange = (event, selectedTime) => {
-    setShowPicker(false);
-    if (selectedTime) {
-      setTime(selectedTime);
-    }
-  };
+  // const onTimeChange = (event, selectedTime) => {
+  //   setShowPicker(false);
+  //   if (selectedTime) {
+  //     setTime(selectedTime);
+  //   }
+  // };
 
-  const showTimePicker = () => {
-    setShowPicker(true);
-  };
+  // const showTimePicker = () => {
+  //   setShowPicker(true);
+  // };
 
 
   useEffect(() => {
@@ -128,7 +128,7 @@ const Account = ({navigation}) => {
                   color="black"
                 /> */}
                 <Image
-                  source={{uri: user.photo}}
+                  source={{uri: user.photo ?? 'https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg'}}
                   style={{ width: 35, height: 35, resizeMode: "contain" ,borderRadius:100}}
                 />
               </View>
@@ -417,15 +417,17 @@ const Account = ({navigation}) => {
                     flex: 3,
                   }}
                 >
-                  <TouchableOpacity onPress={showTimePicker}>
+                  <TouchableOpacity 
+                  // onPress={showTimePicker}
+                  >
                     <Text style={{ paddingLeft: 12, marginTop: 7 }}>
-                      <DateTimePicker
+                      {/* <DateTimePicker
                         value={time}
                         mode="time"
                         is24Hour={true}
                         display="default"
                         onChange={onTimeChange}
-                      />
+                      /> */}
                     </Text>
                   </TouchableOpacity>
                 </View>

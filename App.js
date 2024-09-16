@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAsyncStorage } from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
@@ -14,6 +14,20 @@ export default function App() {
   const [accessToken, setAccessToken] = useState('');
 
   const { getItem, setItem } = useAsyncStorage('assetToken');
+
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getItem();
+      if (token) {
+        setAccessToken(token);
+      }
+    };
+    fetchToken();
+  }, []);
+
+  
+
 
   return <>
     <Provider store={store}>
