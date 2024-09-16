@@ -11,8 +11,12 @@
       }
     },
     "production": {
-      
-     
+      "ios": {
+        "buildType": "app-store"
+      },
+      "android": {
+        "buildType": "apk"
+      }
     },
     
     "development-simulator":{

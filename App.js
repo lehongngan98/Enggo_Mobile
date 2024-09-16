@@ -16,15 +16,15 @@ export default function App() {
   const { getItem, setItem } = useAsyncStorage('assetToken');
 
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      const token = await getItem();
-      if (token) {
-        setAccessToken(token);
-      }
-    };
-    fetchToken();
-  }, []);
+  // useEffect(() => {
+  //   const fetchToken = async () => {
+  //     const token = await getItem();
+  //     if (token) {
+  //       setAccessToken(token);
+  //     }
+  //   };
+  //   fetchToken();
+  // }, []);
 
   
 
